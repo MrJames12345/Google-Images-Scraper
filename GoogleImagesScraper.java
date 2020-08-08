@@ -17,9 +17,6 @@ class GoogleImagesScraper
     // Max number of images can check (only so many loaded in page)
     int MaxNumImages = 25;
     // Scraper
-    private String textAtImageResultLeft    = "data-ictx=\"1\" data-id=\"";
-    private String textAtImageResultRight   = "\"";
-    private int    textAtImageResultLeftLen = 23;
     private String textAtImageLeft    = "\",225,225]\n,[\"https://";
     private String textAtImageRight   = "\",";
     private int    textAtImageLeftLen = 14;
@@ -70,16 +67,15 @@ class GoogleImagesScraper
         // Go to n'th image url
         for ( i = 0; i < inImageNum; i++ )
         {
-            curIndex = searchHtml.indexOf( textAtImageResultLeft, curIndex ) + 1;
+            curIndex = searchHtml.indexOf( textAtImageLeft, curIndex ) + 1;
         }
 
         // Cut out url
         curIndex--;
-        urlLeft = searchHtml.indexOf( textAtImageResultLeft, curIndex ) + textAtImageResultLeftLen;
-        urlRight = searchHtml.indexOf( textAtImageResultRight, urlLeft );
-        imageResultUrl = searchUrl + "#imgrc=" + searchHtml.substring( urlLeft, urlRight );
+        urlLeft = searchHtml.indexOf( textAtImageLeft, curIndex ) + textAtImageLeftLen;
+        urlRight = searchHtml.indexOf( textAtImageRight, urlLeft );
 
-        outUrl = getImageResultsImageUrl( imageResultUrl );
+        outUrl = fixUnsupportedChars( searchHtml.substring( urlLeft, urlRight ) );
 
         return outUrl;
 
@@ -98,45 +94,19 @@ class GoogleImagesScraper
 
 // - Private Methods - //
 
-
-    // Get a given image result's image's url
-    private String getImageResultsImageUrl( String inResultUrl ) throws IOException
-    {
-
-        String outUrl = null;
-        String imageResultHtml = null;
-        int urlLeft;
-        int urlRight;
-        
-        // Get image result's html
-        imageResultHtml = Jsoup.connect( inResultUrl ).get().html();
-
-        // Cut out image's url
-        urlLeft = imageResultHtml.indexOf( textAtImageLeft ) + textAtImageLeftLen;
-        urlRight = imageResultHtml.indexOf( textAtImageRight, urlLeft );
-        outUrl = imageResultHtml.substring( urlLeft, urlRight );
-
-        // Replace unsupported chars with actual chars
-        outUrl = fixUnsupportedChars( outUrl );
-
-        return outUrl;
-
-    }
-
-
     // Get video titles and href's from html
     private String cutOutMainData() throws IOException
     {
         String outMainData = null;
 
         // IF html does not include required text, error in retrieving html originally, so throw exception
-        if ( searchHtml.indexOf( textAtImageResultLeft ) < 0 )
+        if ( searchHtml.indexOf( textAtImageLeft ) < 0 )
         {
             throw new IOException();
         }
 
         // ELSE get main data and return
-        outMainData = searchHtml.substring( searchHtml.indexOf( textAtImageResultLeft ), searchHtml.lastIndexOf( textAtImageResultLeft ) + 50 );
+        outMainData = searchHtml.substring( searchHtml.indexOf( textAtImageLeft ), searchHtml.lastIndexOf( textAtImageLeft ) + 50 );
 
         return outMainData;
     }
